@@ -1,4 +1,4 @@
-opbot is a cheap alternative to chanserv
+## opbot is a cheap alternative to chanserv
 opbot should:
 * when it first joins a channel, it should detect all current ops and add them to the op list
 * automatically give op to anyone on the op list for that channel
