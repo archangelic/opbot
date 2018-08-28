@@ -22,11 +22,16 @@ class Bot(irc.bot.SingleServerIRCBot):
             for op in ops:
                 if op not in self.oplist[channel]['ops']:
                     self.oplist[channel]['ops'].append(op)
-            for user in users:
-                if user in self.oplist[channel]['ops'] and user not in ops:
-                    c.mode(channel, '+o {}'.format(user))
-                    time.sleep(1)
         self.write_oplist()
+
+    def give_ops(self, c, channel):
+        chan = self.channels[channel]
+        ops = chan.opers()
+        users = chan.users()
+        for user in users:
+            if user in self.oplist[channel]['ops'] and user not in ops:
+                c.mode(channel, '+o {}'.format(user))
+                time.sleep(0.5)
 
     def get_oplist(self):
         with open('oplist.json') as o:
@@ -53,7 +58,7 @@ class Bot(irc.bot.SingleServerIRCBot):
         c.join(e.arguments[0])
 
     def on_join(self, c, e):
-        self.update_oplist(c, [e.target])
+        self.give_ops(c, [e.target])
 
     def on_mode(self, c, e):
         if e.source.nick == 'opbot':
