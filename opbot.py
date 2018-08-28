@@ -10,9 +10,7 @@ class Bot(irc.bot.SingleServerIRCBot):
         irc.bot.SingleServerIRCBot.__init__(self, [(server, port)], nickname, nickname)
         self.oplist = self.get_oplist()
 
-    def update_oplist(self, c, channels='all'):
-        if channels == 'all':
-            channels = [i for i in self.oplist]
+    def update_oplist(self, c, channels):
         for channel in channels:
             chan = self.channels[channel]
             ops = chan.opers()
@@ -24,14 +22,17 @@ class Bot(irc.bot.SingleServerIRCBot):
                     self.oplist[channel]['ops'].append(op)
         self.write_oplist()
 
-    def give_ops(self, c, channel):
-        chan = self.channels[channel]
-        ops = chan.opers()
-        users = chan.users()
-        for user in users:
-            if user in self.oplist[channel]['ops'] and user not in ops:
-                c.mode(channel, '+o {}'.format(user))
-                time.sleep(0.5)
+    def give_ops(self, c, channels='all'):
+        if channels == 'all':
+            channels = [c for c in self.oplist]
+        for channel in channels:
+            chan = self.channels[channel]
+            ops = chan.opers()
+            users = chan.users()
+            for user in users:
+                if user in self.oplist[channel]['ops'] and user not in ops:
+                    c.mode(channel, '+o {}'.format(user))
+                    time.sleep(0.5)
 
     def get_oplist(self):
         with open('oplist.json') as o:
@@ -50,9 +51,9 @@ class Bot(irc.bot.SingleServerIRCBot):
         text = e.arguments[0]
         cmd = text.split(' ')[0]
         if cmd == '!update':
-            self.update_oplist(c, [e.target])
+            self.give_ops(c, [e.target])
         elif cmd == '!updateall':
-            self.update_oplist(c)
+            self.give_ops(c)
 
     def on_invite(self, c, e):
         c.join(e.arguments[0])
